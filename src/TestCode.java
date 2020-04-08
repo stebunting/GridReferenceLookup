@@ -2,6 +2,8 @@
 public class TestCode {
 
 	public static void main(String[] args) {
+		
+		// UK
 		double[] thelizard = {49.971641, -5.203509};
 		double[] wimbledon = {51.427621, -0.190793};
 		double[] shetlandislands = {60.419666, -1.393972};
@@ -19,10 +21,15 @@ public class TestCode {
 		double[] belfast = {54.574931, -5.983254};
 		double[] cork = {51.622467, -8.891433};
 		
-		double[] location = galway;
+		// Netherlands
+		double[] groningen = {53.21484, 6.569683};
+		double[] rotterdam = {51.920239, 4.450462};
+		double[] venlo = {51.393114, 6.179330};
+		
+		double[] location = venlo;
 		GridReferenceLookup lookup = new GridReferenceLookup(location[0], location[1]);
 		
-		System.out.println(lookup.getUTM());
-		System.out.println(lookup.getIreland());
+		System.out.println(lookup.getGridReference(GridSystem.UTM));
+		System.out.println(lookup.getUTM(32));
 	}
 }

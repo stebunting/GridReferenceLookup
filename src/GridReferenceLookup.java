@@ -2,21 +2,18 @@ import java.util.Locale;
 
 public class GridReferenceLookup {
 
-	// Properties
+	// Fields
 	// WGS84 Latitude
-	private final double latitude;
+	private double latitude;
 	
 	// WGS84 Latitude
-	private final double longitude;
+	private double longitude;
 
 	// WGS84 Cartesian Coordinates
-	private final CartesianCoordinates cartesianCoordinates;
+	private CartesianCoordinates cartesianCoordinates;
 	
-	private final Locale locale;
-	
-	// Initialisers
+	// Constructors
 	public GridReferenceLookup(double latitude, double longitude) {
-		this.locale = Locale.getDefault();
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.cartesianCoordinates = geodeticToECEF(EllipsoidName.WGS84);
@@ -24,10 +21,54 @@ public class GridReferenceLookup {
 	
 	public GridReferenceLookup(int latDegrees, int latMinutes, double latSeconds, char latDirection,
 			int lngDegrees, int lngMinutes, double lngSeconds, char lngDirection) {
-		this.locale = Locale.getDefault();	
 		this.latitude = toDecimal(latDegrees, latMinutes, latSeconds, latDirection);
 		this.longitude = toDecimal(lngDegrees, lngMinutes, lngSeconds, lngDirection);
 		this.cartesianCoordinates = geodeticToECEF(EllipsoidName.WGS84);
+	}
+	
+	// Setters
+	public boolean setLatitude(double latitude) {
+		this.latitude = latitude;
+		this.cartesianCoordinates = geodeticToECEF(EllipsoidName.WGS84);
+		return true;
+	}
+	
+	public boolean setLatitude(int latDegrees, int latMinutes, double latSeconds, char latDirection) {
+		
+		// Check direction is valid
+		latDirection = Character.toUpperCase(latDirection);
+		if (latDirection != 'N' && latDirection != 'S') {
+			return false;
+		}
+		
+		Double decimalLatitude = toDecimal(latDegrees, latMinutes, latSeconds, latDirection);
+		if (decimalLatitude == null) {
+			return false;
+		} else {
+			return setLatitude(decimalLatitude);
+		}
+	}
+	
+	public boolean setLongitude(double longitude) {
+		this.longitude = longitude;
+		this.cartesianCoordinates = geodeticToECEF(EllipsoidName.WGS84);
+		return true;
+	}
+	
+	public boolean setLongitude(int lngDegrees, int lngMinutes, double lngSeconds, char lngDirection) {
+		
+		// Check direction is valid
+		lngDirection = Character.toUpperCase(lngDirection);
+		if (lngDirection != 'W' && lngDirection != 'E') {
+			return false;
+		}
+		
+		Double decimalLongitude = toDecimal(lngDegrees, lngMinutes, lngSeconds, lngDirection);
+		if (decimalLongitude == null) {
+			return false;
+		} else {
+			return setLongitude(decimalLongitude);
+		}
 	}
 	
 	// Private Transformation Methods
@@ -204,7 +245,7 @@ public class GridReferenceLookup {
     
     // Sequence of transforms to convert Cartesian Coordinates 
     // Returns local easting/northing and grid reference
-    private GridReference transform(DatumName projection, GridReference.System system) {
+    private GridReference transform(DatumName projection, GridSystem system) {
     	CartesianCoordinates transformedCoordinates = helmertTransformation(projection);
     	double[] transformedLatLon = ECEFToGeodetic(transformedCoordinates, projection);
     	double[] eastingNorthing = geodeticToEastingsNorthings(transformedLatLon, projection);
@@ -219,30 +260,51 @@ public class GridReferenceLookup {
     
     @Override
     public String toString() {
-    	return String.format(locale, "(%.6f, %.6f)", latitude, longitude);
+    	return String.format(Locale.getDefault(), "(%.6f, %.6f)", latitude, longitude);
     }
+
     // Public Methods
-    public GridReference getUK() {
-    	return transform(DatumName.NATIONAL_GRID, GridReference.System.GB);
-    }
-    
-    public GridReference getIreland() {
-    	return transform(DatumName.IRISH_NATIONAL_GRID, GridReference.System.IE);
-    }
-    
     public GridReference getUTM() {
     	int zone = 1 + (int) ((longitude + 180) / 6);
+    	return getUTM(zone);
+    }
+    
+    public GridReference getUTM(Integer zone) {
     	
-    	String hemisphere = "Northern Hemisphere";
-    	DatumName datumName = DatumName.UTM_NORTH;
-    	if (latitude < 0) {
-    		datumName = DatumName.UTM_SOUTH;
-    		hemisphere = "Southern Hemisphere";
+    	// Define hemisphere
+		String hemisphere = "Northern Hemisphere";
+		DatumName datumName = DatumName.UTM_NORTH;
+		if (latitude < 0) {
+			datumName = DatumName.UTM_SOUTH;
+			hemisphere = "Southern Hemisphere";
+		}
+		
+		double[] latLon = new double[] {latitude, longitude + ((30 - zone) * 6)};
+		double[] eastingNorthing = geodeticToEastingsNorthings(latLon, datumName);
+		GridReference gridReference = new GridReference(eastingNorthing[0], eastingNorthing[1], GridSystem.UTM, zone, hemisphere);
+    	
+    	if (gridReference.isValid()) {
+    		return gridReference;
+    	} else {
+    		return null;
+    	}    	
+    }
+    
+    public GridReference getGridReference(GridSystem gridSystem) {
+    	
+    	GridReference gridReference;
+    	switch (gridSystem) {
+    	case GB:
+    		gridReference = transform(DatumName.NATIONAL_GRID, GridSystem.GB);
+    		break;
+    	case IE:
+    		gridReference = transform(DatumName.IRISH_NATIONAL_GRID, GridSystem.IE);
+    		break;
+    	case UTM:
+    	default:
+    		// Doesn't need to check isValid as built into getUTM() method
+    		return getUTM();
     	}
-    	
-    	double[] latLon = new double[] {latitude, longitude + ((30 - zone) * 6)};
-    	double[] eastingNorthing = geodeticToEastingsNorthings(latLon, datumName);
-    	GridReference gridReference = new GridReference(eastingNorthing[0], eastingNorthing[1], GridReference.System.UTM, zone, hemisphere);
     	
     	if (gridReference.isValid()) {
     		return gridReference;

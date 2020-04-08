@@ -1,6 +1,7 @@
 import java.util.HashMap;
 import java.util.Map;
 
+// Define required Constants
 public class Constants {
 	
 	// Constants

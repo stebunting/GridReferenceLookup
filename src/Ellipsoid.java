@@ -1,3 +1,4 @@
+// Define available Ellipsoids
 enum EllipsoidName {
 	WGS84,
 	GRS80,
@@ -5,16 +6,17 @@ enum EllipsoidName {
 	AIRY1830_MODIFIED
 }
 
+// Define an Ellipsoid
 public class Ellipsoid {
 
-	// Properties
+	// Fields
     private final String name;
     private final double equatorialRadius;
     private final double polarRadius;
     private final double flattening;
     private final double eccentricitySquared;
     
-    // Initialiser
+    // Constructor
     public Ellipsoid(String name, double equatorialRadius, double polarRadius) {
         this.name = name;
         this.equatorialRadius = equatorialRadius;

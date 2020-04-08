@@ -1,3 +1,4 @@
+// Define available Datums
 enum DatumName {
 	NATIONAL_GRID,
 	IRISH_NATIONAL_GRID,
@@ -5,9 +6,10 @@ enum DatumName {
 	UTM_SOUTH
 }
 
+// Define a Datum
 public class Datum {
 
-	// Properties
+	// Fields
     private final String name;
     private final double scaleFactor;
     private final double trueOriginPhi;
@@ -19,7 +21,7 @@ public class Datum {
     private final double[] helmertRotation;
     private final Ellipsoid ellipsoid;
     
-    // Initialisation
+    // Constructor
     public Datum(String name, double scaleFactor, double trueOriginPhi,
     		int trueOriginLambda, int trueOriginEasting, int trueOriginNorthing,
     		double helmertTransformX, double helmertTransformY, double helmertTransformZ,
