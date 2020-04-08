@@ -4,8 +4,11 @@ enum GridSystem {
 	GB("UK"),
 	IE("Ireland");
 	
-	public final String label;
+	private final String label;
+	
 	private GridSystem(String label) {
 		this.label = label;
 	}
+	
+	public String getLabel() { return label; }
 }

@@ -6,6 +6,10 @@ public class GridReference {
 	// Grid System
 	private final GridSystem gridSystem;
 	
+	// WGS84 Latitude / Longitude Coordinates
+	private final double latitude;
+	private final double longitude;
+	
 	// Easting / Northing Coordinates
 	private final double easting;
 	private final double northing;
@@ -13,25 +17,33 @@ public class GridReference {
 	// Attributes relating to grid system
 	private String gridReference = "";
 	private final int zone;
-	private String hemisphere;
+	private Hemisphere hemisphere;
 	
 	// Locale for String formatting
 	private final Locale locale;
 	
 	// Constructors
 	// Country-specific Constructor
-	public GridReference(double easting, double northing, GridSystem gridSystem) {
+	public GridReference(double latitude, double longitude, double easting, double northing, GridSystem gridSystem) {
+		this.latitude = latitude;
+		this.longitude = longitude;
 		this.easting = easting;
 		this.northing = northing;
 		this.gridSystem = gridSystem;
 		this.zone = 1;
-		this.hemisphere = "";
+		if (latitude < 0) {
+			this.hemisphere = Hemisphere.SOUTH;
+		} else {
+			this.hemisphere = Hemisphere.NORTH;
+		}
 		this.locale = Locale.getDefault();
 		setGridReference();
 	}
-	
+
 	// UTM Constructor
-	public GridReference(double easting, double northing, GridSystem gridSystem, int zone, String hemisphere) {
+	public GridReference(double latitude, double longitude, double easting, double northing, GridSystem gridSystem, int zone, Hemisphere hemisphere) {
+		this.latitude = latitude;
+		this.longitude = longitude;
 		this.easting = easting;
 		this.northing = northing;
 		this.gridSystem = gridSystem;
@@ -208,9 +220,9 @@ public class GridReference {
 	public String toString() {
 		String str = "";
 		if (gridSystem == GridSystem.UTM) {
-			str = String.format(locale, "%s, Zone: %d, Easting: %.0f, Northing: %.0f, %s", gridSystem.label, zone, easting, northing, hemisphere);
+			str = String.format(locale, "%s, Zone: %d, Easting: %.0f, Northing: %.0f, %s", gridSystem.getLabel(), zone, easting, northing, hemisphere.getLabel());
 		} else {
-			str = String.format(locale, "%s, Easting: %.0f, Northing: %.0f, Grid Reference: %s", gridSystem.label, easting, northing, gridReference);
+			str = String.format(locale, "%s, Easting: %.0f, Northing: %.0f, Grid Reference: %s", gridSystem.getLabel(), easting, northing, gridReference);
 		}
 		return str;
 	}
@@ -230,4 +242,14 @@ public class GridReference {
 					   easting >= 0 && northing >= 0;
 		}
 	}
+	
+	// Getters
+	public String getGridSystem() { return gridSystem.getLabel(); }
+	public double getLatitude() { return latitude; }
+	public double getLongitude() { return longitude; }
+	public double getEasting() { return easting; }
+	public double getNorthing() { return northing; }
+	public String getGridReference() { return gridReference; }
+	public int getZone() { return zone; }
+	public String getHemisphere() { return hemisphere.getLabel(); }
 }

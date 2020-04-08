@@ -249,7 +249,7 @@ public class GridReferenceLookup {
     	CartesianCoordinates transformedCoordinates = helmertTransformation(projection);
     	double[] transformedLatLon = ECEFToGeodetic(transformedCoordinates, projection);
     	double[] eastingNorthing = geodeticToEastingsNorthings(transformedLatLon, projection);
-    	GridReference gridReference = new GridReference(eastingNorthing[0], eastingNorthing[1], system);
+    	GridReference gridReference = new GridReference(latitude, longitude, eastingNorthing[0], eastingNorthing[1], system);
     	
     	if (gridReference.isValid()) {
     		return gridReference;
@@ -272,16 +272,16 @@ public class GridReferenceLookup {
     public GridReference getUTM(Integer zone) {
     	
     	// Define hemisphere
-		String hemisphere = "Northern Hemisphere";
+		Hemisphere hemisphere = Hemisphere.NORTH;
 		DatumName datumName = DatumName.UTM_NORTH;
 		if (latitude < 0) {
 			datumName = DatumName.UTM_SOUTH;
-			hemisphere = "Southern Hemisphere";
+			hemisphere = Hemisphere.SOUTH;
 		}
 		
 		double[] latLon = new double[] {latitude, longitude + ((30 - zone) * 6)};
 		double[] eastingNorthing = geodeticToEastingsNorthings(latLon, datumName);
-		GridReference gridReference = new GridReference(eastingNorthing[0], eastingNorthing[1], GridSystem.UTM, zone, hemisphere);
+		GridReference gridReference = new GridReference(latitude, longitude, eastingNorthing[0], eastingNorthing[1], GridSystem.UTM, zone, hemisphere);
     	
     	if (gridReference.isValid()) {
     		return gridReference;
