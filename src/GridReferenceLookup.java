@@ -204,11 +204,11 @@ public class GridReferenceLookup {
     
     // Sequence of transforms to convert Cartesian Coordinates 
     // Returns local easting/northing and grid reference
-    private GridReference transform(DatumName projection, GridReference.Country country) {
+    private GridReference transform(DatumName projection, GridReference.System system) {
     	CartesianCoordinates transformedCoordinates = helmertTransformation(projection);
     	double[] transformedLatLon = ECEFToGeodetic(transformedCoordinates, projection);
     	double[] eastingNorthing = geodeticToEastingsNorthings(transformedLatLon, projection);
-    	GridReference gridReference = new GridReference(eastingNorthing[0], eastingNorthing[1], country);
+    	GridReference gridReference = new GridReference(eastingNorthing[0], eastingNorthing[1], system);
     	
     	if (gridReference.isValid()) {
     		return gridReference;
@@ -223,14 +223,14 @@ public class GridReferenceLookup {
     }
     // Public Methods
     public GridReference getUK() {
-    	return transform(DatumName.NATIONAL_GRID, GridReference.Country.GB);
+    	return transform(DatumName.NATIONAL_GRID, GridReference.System.GB);
     }
     
     public GridReference getIreland() {
-    	return transform(DatumName.IRISH_NATIONAL_GRID, GridReference.Country.IE);
+    	return transform(DatumName.IRISH_NATIONAL_GRID, GridReference.System.IE);
     }
     
-    public void getUTM() {
+    public GridReference getUTM() {
     	int zone = 1 + (int) ((longitude + 180) / 6);
     	
     	String hemisphere = "Northern Hemisphere";
@@ -242,28 +242,16 @@ public class GridReferenceLookup {
     	
     	double[] latLon = new double[] {latitude, longitude + ((30 - zone) * 6)};
     	double[] eastingNorthing = geodeticToEastingsNorthings(latLon, datumName);
+    	GridReference gridReference = new GridReference(eastingNorthing[0], eastingNorthing[1], GridReference.System.UTM, zone, hemisphere);
     	
-    	System.out.println((int) eastingNorthing[0]);
-    	System.out.println((int) eastingNorthing[1]);
-    	System.out.println(zone);
-    	System.out.println(hemisphere);
+    	if (gridReference.isValid()) {
+    		return gridReference;
+    	} else {
+    		return null;
+    	}
     }
     
 	// Getters
 	public double getLatitude() { return latitude; }
 	public double getLongitude() { return longitude; }
-	
-	// Test
-	public static void main(String[] args) {
-		double[] thelizard = {49.971641, -5.203509};
-		double[] wimbledon = {51.427621, -0.190793};
-		double[] enniskillen = {54.344367, -7.633891};
-		
-		double[] location = {54.344367, -19.633891};
-		GridReferenceLookup lookup = new GridReferenceLookup(location[0], location[1]);
-		
-		System.out.println(lookup);
-		lookup.getUTM();
-	}
-
 }

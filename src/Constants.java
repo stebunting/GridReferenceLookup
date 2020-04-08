@@ -21,15 +21,18 @@ public class Constants {
 				49, -2, 400000, -100000,
 				-446.448, 125.157, -542.06, 20.4894, -0.1502, -0.247, -0.8421,
 				ellipsoids.get(EllipsoidName.AIRY1830)));
+		
 		datums.put(DatumName.IRISH_NATIONAL_GRID, new Datum(
 				"Irish National Grid", 1.000035,
 				53.5, -8, 200000, 250000,
 				-482.53, 130.596, -564.557, -8.15, 1.042, 0.214, 0.631,
 				ellipsoids.get(EllipsoidName.AIRY1830_MODIFIED)));
+		
 		datums.put(DatumName.UTM_NORTH, new Datum(
 				"UTM Northern Hemisphere", 0.9996,
 				0, -3, 500000, 0, 0, 0, 0, 0, 0, 0, 0,
 				ellipsoids.get(EllipsoidName.WGS84)));
+		
 		datums.put(DatumName.UTM_SOUTH, new Datum(
 				"UTM Southern Hemisphere", 0.9996,
 				0, -3, 500000, 10000000, 0, 0, 0, 0, 0, 0, 0,

@@ -5,19 +5,42 @@ public class GridReference {
 	// Properties
 	private final double easting;
 	private final double northing;
-	private final Country country;
+	private final System system;
 	private String gridReference = "";
+	private final int zone;
+	private String hemisphere;
 	private final Locale locale;
 	
-	enum Country {
-		GB, IE
+	enum System {
+		UTM("UTM"),
+		GB("UK"),
+		IE("Ireland");
+		
+		public final String label;
+		private System(String label) {
+			this.label = label;
+		}
 	}
 	
 	// Initialisers
-	public GridReference(double easting, double northing, Country country) {
+	// Country-specific initialiser
+	public GridReference(double easting, double northing, System system) {
 		this.easting = easting;
 		this.northing = northing;
-		this.country = country;
+		this.system = system;
+		this.zone = 1;
+		this.hemisphere = "";
+		this.locale = Locale.getDefault();
+		setGridReference();
+	}
+	
+	// UTM Initialiser
+	public GridReference(double easting, double northing, System system, int zone, String hemisphere) {
+		this.easting = easting;
+		this.northing = northing;
+		this.system = system;
+		this.zone = zone;
+		this.hemisphere = hemisphere;
 		this.locale = Locale.getDefault();
 		setGridReference();
 	}
@@ -30,7 +53,7 @@ public class GridReference {
 		String code = String.format(locale, "%s%s", eastingString.substring(0, 3), northingString.substring(0, 3));
 		String square = "";
 		
-		if (country == Country.GB) {
+		if (system == System.GB) {
 			switch (code) {
 	        case "000012": square = "HL"; break;
 	        case "001012": square = "HM"; break;
@@ -151,7 +174,7 @@ public class GridReference {
 	            
 	        default: square = ""; break;
 	        }
-		} else if (country == Country.IE) {
+		} else if (system == System.IE) {
 			switch (code) {
 			case "000004": square = "A"; break;
 	        case "001004": square = "B"; break;
@@ -182,19 +205,33 @@ public class GridReference {
 			}
 		}
 		
-		gridReference = String.format(locale, "%s %s %s", square, eastingString.substring(3, 6), northingString.substring(3, 6));
+		gridReference = String.format(locale, "%s%s%s", square, eastingString.substring(3, 6), northingString.substring(3, 6));
 	}
 	
 	@Override
 	public String toString() {
-		String str = String.format(locale, "(%.0f, %.0f, %s)", easting, northing, gridReference);
+		String str = "";
+		if (system == System.UTM) {
+			str = String.format(locale, "%s, Zone: %d, Easting: %.0f, Northing: %.0f, %s", system.label, zone, easting, northing, hemisphere);
+		} else {
+			str = String.format(locale, "%s, Easting: %.0f, Northing: %.0f, Grid Reference: %s", system.label, easting, northing, gridReference);
+		}
 		return str;
 	}
 	
 	// Public Methods
 	public boolean isValid() {
-		return gridReference != null && !gridReference.equals("") &&
-			   easting > 0 && easting < 700000 &&
-			   northing > 0 && northing < 1300000;
+		if (system == System.GB) {
+			return gridReference != null &&
+				   easting >= 0 && easting < 700000 &&
+				   northing >= 0 && northing < 1300000;
+		} else if (system == System.IE) {
+			return gridReference != null &&
+					   easting >= 0 && easting < 500000 &&
+					   northing >= 0 && northing < 500000;
+		} else {
+			return zone > 0 && zone <= 60 && hemisphere != null &&
+					   easting >= 0 && northing >= 0;
+		}
 	}
 }
